@@ -20,20 +20,29 @@ COPY . .
 
 CMD ["air", "-c", ".air.toml"]
 
+FROM ghcr.io/a-h/templ:latest AS gen
+
+COPY --chown=65532:65532 . /app
+
+WORKDIR /app
+
+RUN ["templ", "generate"]
+
 FROM build-base AS prod
 
 RUN useradd -u 1001 nonroot
 
-RUN go install github.com/a-h/templ/cmd/templ@latest
-
-COPY . .
-
-RUN templ generate
+COPY --from=gen /app /app
 
 RUN go build \
   -ldflags="-linkmode external -extldflags -static" \
   -tags netgo \
-  -o main
+  -o http \
+  ./cmd/http/main.go
+
+FROM build-base AS test
+
+RUN go test -v ./...
 
 FROM scratch
 
@@ -41,10 +50,11 @@ WORKDIR /
 
 COPY --from=prod /etc/passwd /etc/passwd
 
-COPY --from=prod /app/main main
+COPY --from=prod /app/http http
 
 USER nonroot
 
 EXPOSE 8272
 
-CMD ["/main"]
+CMD ["/http"]
+
