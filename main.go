@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"os"
+	"context"
 )
 
 func main() {
-	fmt.Println("hello, sailor!");
+	component := hello("lulzie")
+	component.Render(context.Background(), os.Stdout)
 }

@@ -13,7 +13,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM build-base AS dev
 
 RUN go install github.com/air-verse/air@latest && \
-    go install github.com/go-delve/delve/cmd/dlv@latest
+    go install github.com/go-delve/delve/cmd/dlv@latest && \
+    go install github.com/a-h/templ/cmd/templ@latest
 
 COPY . .
 
@@ -23,7 +24,11 @@ FROM build-base AS prod
 
 RUN useradd -u 1001 nonroot
 
+RUN go install github.com/a-h/templ/cmd/templ@latest
+
 COPY . .
+
+RUN templ generate
 
 RUN go build \
   -ldflags="-linkmode external -extldflags -static" \
