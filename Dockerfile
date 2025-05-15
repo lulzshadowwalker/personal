@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM build-base AS dev
 
 RUN go install github.com/air-verse/air@latest && \
-    go install github.com/go-delve/debug/cmd/dlv@latest
+    go install github.com/go-delve/delve/cmd/dlv@latest
 
 COPY . .
 

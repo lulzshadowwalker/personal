@@ -1,0 +1,11 @@
+services:
+  app:
+    build:
+      context: .
+      target: dev
+    env_file: .env
+    ports:
+      - ${PORT:-8080}
+    volumes:
+      - .:/app
+
