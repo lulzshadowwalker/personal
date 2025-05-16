@@ -54,7 +54,7 @@ COPY --from=prod /app/http http
 
 USER nonroot
 
-EXPOSE 8272
+EXPOSE 3812
 
 CMD ["/http"]
 
