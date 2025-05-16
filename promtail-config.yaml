@@ -13,6 +13,7 @@ scrape_configs:
         labels:
           job: system
           __path__: /var/log/**/*.log
+
   - job_name: docker-containers
     static_configs:
       - targets:
@@ -21,3 +22,21 @@ scrape_configs:
           job: docker
           __path__: /var/lib/docker/containers/*/*.log
 
+  - job_name: http-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: http-logs
+          __path__: /app/logs/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            log: log
+            stream: stream
+            time: time
+      - labels:
+          stream: stream
+          time: time
+      - output:
+          source: log

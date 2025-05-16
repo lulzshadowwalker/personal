@@ -1,0 +1,79 @@
+services:
+  app:
+    image: lulzshadowwalker/personal:prod
+    env_file: .env
+    expose:
+      - "${PORT:-8080}"
+    volumes:
+      - .:/app
+    networks:
+      - proxy
+      - monitoring-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.personal.rule=Host(`personal.lulzie.online`)"
+      - "traefik.http.routers.personal.entrypoints=websecure"
+      - "traefik.http.routers.personal.tls.certresolver=myresolver"
+      - "com.centurylinklabs.watchtower.enable=true"
+    deploy:
+      mode: replicated
+      replicas: 3
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.3
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
+    networks:
+      - monitoring-net
+
+  promtail:
+    image: grafana/promtail:3.5.0
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./promtail-config.yaml:/etc/promtail/config.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+    networks:
+      - monitoring-net
+
+  grafana:
+    image: grafana/grafana:12.0.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    depends_on:
+      - loki
+    networks:
+      - monitoring-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.personal_grafana.rule=Host(`grafana.personal.lulzie.online`)"
+      - "traefik.http.routers.personal_grafana.entrypoints=websecure"
+      - "traefik.http.routers.personal_grafana.tls.certresolver=myresolver"
+
+  watchtower:
+    image: containrrr/watchtower
+    command:
+      - "--label-enable"
+      - "--interval"
+      - "15"
+      - "--rolling-restart"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  monitoring-net:
+    driver: bridge
+  proxy:
+    external: true
+
+volumes:
+  loki-data:
+  promtail-data:
+  grafana-data:
