@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/lulzshadowwalker/personal/cmd/http/public"
 	"github.com/lulzshadowwalker/personal/internal/config"
 	"github.com/lulzshadowwalker/personal/internal/template"
 )
@@ -62,9 +63,29 @@ func main() {
 	baseHandler := templ.Handler(component)
 	handler := loggingMiddleware(logger, baseHandler)
 
+	isDevelopment := os.Getenv("GO_ENV") != "production"
+
+	mux := http.NewServeMux()
+
+	mux.Handle("GET /public/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if isDevelopment {
+			w.Header().Set("Cache-Control", "no-store")
+		}
+
+		fs := http.FileServer(http.Dir("./cmd/http/public"))
+		if !isDevelopment {
+			fs = http.FileServer(http.FS(public.Public))
+		}
+
+		http.StripPrefix("/public/", fs).ServeHTTP(w, r)
+	}))
+
+	mux.Handle("GET /", handler)
+	mux.Handle("/", handler)
+
 	addr := fmt.Sprintf(":%s", port)
 	logger.Info("starting HTTP server", "addr", addr)
-	if err := http.ListenAndServe(addr, handler); err != nil {
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		logger.Error("server terminated unexpectedly", "error", err)
 	}
 }

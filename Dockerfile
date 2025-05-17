@@ -12,19 +12,24 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 FROM build-base AS dev
 
+RUN curl -sLo /usr/local/bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64 && \
+    chmod +x /usr/local/bin/tailwindcss
+
 RUN go install github.com/air-verse/air@latest && \
     go install github.com/go-delve/delve/cmd/dlv@latest && \
     go install github.com/a-h/templ/cmd/templ@latest
 
 COPY . .
 
-CMD ["air", "-c", ".air.toml"]
+CMD ["make", "dev"]
 
 FROM ghcr.io/a-h/templ:latest AS gen
 
 COPY --chown=65532:65532 . /app
 
 WORKDIR /app
+
+#  TODO: Generate Tailwindcss
 
 RUN ["templ", "generate"]
 

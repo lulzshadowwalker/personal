@@ -1,0 +1,5 @@
+{
+  "componentsDir": "internal/template/component",
+  "utilsDir": "internal/template/util",
+  "moduleName": "github.com/lulzshadowwalker/personal"
+}

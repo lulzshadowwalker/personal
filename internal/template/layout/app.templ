@@ -1,0 +1,42 @@
+package layout
+
+import "fmt"
+
+type Props struct {
+	Title string
+}
+
+func TitleTemplate(val string) string {
+	if val == "" {
+		return "Personal"
+	}
+
+	return fmt.Sprintf("%s | Personal", val)
+}
+
+func Fallback(val string, fallback string) string {
+	if val == "" {
+		return fallback
+	}
+
+	return val
+}
+
+templ App(props ...Props) {
+	{{ var p Props }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ TitleTemplate(p.Title) } </title>
+			<link rel="stylesheet" href="/public/css/style.css"/>
+		</head>
+		<body>
+			{ children... }
+		</body>
+	</html>
+}
