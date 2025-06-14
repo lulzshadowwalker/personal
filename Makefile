@@ -1,6 +1,6 @@
 # Run templ generation in watch mode
 templ:
-	templ generate --watch --proxy="http://localhost:3812" --open-browser=true
+	templ generate --watch --proxy="http://localhost:3000" --open-browser=true
 
 # Run air for Go hot reload
 server:
@@ -15,7 +15,7 @@ server:
 
 # Watch Tailwind CSS changes
 tailwind:
-	tailwindcss -i ./internal/template/css/app.css -o ./cmd/http/public/css/style.css --watch --minify
+	tailwindcss -i ./internal/http/template/css/app.css -o ./cmd/http/public/css/style.css --watch --minify
 
 # Start development server with all watchers
 dev:

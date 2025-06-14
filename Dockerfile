@@ -23,21 +23,29 @@ COPY . .
 
 CMD ["make", "dev"]
 
-FROM ghcr.io/a-h/templ:latest AS gen
+FROM ghcr.io/a-h/templ:latest AS templ-gen
 
 COPY --chown=65532:65532 . /app
 
 WORKDIR /app
 
-#  TODO: Generate Tailwindcss
-
 RUN ["templ", "generate"]
+
+FROM dev AS tailwindcss-gen
+
+COPY --chown=65532:65532 . /app
+
+WORKDIR /app
+
+RUN ["make", "tailwind"]
 
 FROM build-base AS prod
 
 RUN useradd -u 1001 nonroot
 
-COPY --from=gen /app /app
+COPY --from=templ-gen /app /app
+
+COPY --from=tailwindcss-gen /app/cmd/http/public/ /app/cmd/http/public/
 
 RUN go build \
   -ldflags="-linkmode external -extldflags -static" \
@@ -57,9 +65,11 @@ COPY --from=prod /etc/passwd /etc/passwd
 
 COPY --from=prod /app/http http
 
+COPY --from=prod /app/cmd/http/public/ /cmd/http/public/
+
 USER nonroot
 
-EXPOSE 3812
+EXPOSE 3000
 
 CMD ["/http"]
 

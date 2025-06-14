@@ -1,0 +1,21 @@
+package layout
+
+import (
+	"context"
+	"errors"
+	"github.com/gorilla/sessions"
+)
+
+func GetSessionFromContext(ctx context.Context) (*sessions.Session, error) {
+	session, ok := ctx.Value("session").(*sessions.Session)
+	if !ok {
+		return nil, errors.New("session not found in context")
+	}
+	return session, nil
+}
+
+templ Auth(props ...Props) {
+	@Root(props...) {
+		{ children... }
+	}
+}

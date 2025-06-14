@@ -1,0 +1,13 @@
+package home
+
+import (
+	"github.com/lulzshadowwalker/personal/internal/http/template/layout"
+)
+
+templ Index(name string) {
+	@layout.App() {
+		<main class="flex min-h-screen items-center justify-center bg-gray-50">
+      hello, world!
+    </main>
+	}
+}

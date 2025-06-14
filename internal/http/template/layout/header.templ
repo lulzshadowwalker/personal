@@ -1,0 +1,23 @@
+package layout
+
+import "github.com/lulzshadowwalker/personal/internal/http/template/component/button"
+import "github.com/lulzshadowwalker/personal/internal/http/template/component/icon"
+
+templ Header() {
+	<header class="p-6 flex items-center">
+		<div class="flex gap-2 items-start">
+			@icon.Sparkle(icon.Props{Size: 28, Class: "translate-y-2", Fill: "black"})
+			<div>
+				<h1 class="text-3xl font-bold">Team Members </h1>
+				<p>Manage your team members and their account permissions here.</p>
+			</div>
+		</div>
+		@button.Button(button.Props{
+			Class:   "flex gap-2 items-center ms-auto",
+			Variant: button.VariantOutline,
+		}) {
+			@icon.Plus()
+			Add team member
+		}
+	</header>
+}

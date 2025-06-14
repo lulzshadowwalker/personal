@@ -1,0 +1,118 @@
+package layout
+
+import (
+	"github.com/lulzshadowwalker/personal/internal/http/session"
+	"github.com/lulzshadowwalker/personal/internal/http/template"
+	"github.com/lulzshadowwalker/personal/internal/http/template/component/alert"
+	"github.com/lulzshadowwalker/personal/internal/http/template/component/icon"
+)
+
+templ Root(props ...Props) {
+	{{ var p Props }}
+	if len(props) > 0 {
+		{{ p = props[0] }}
+	}
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ Fallback(p.Title, "Auth | Personal") } </title>
+			<link rel="stylesheet" href="/public/css/style.css"/>
+			<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+			<script src="https://cdn.jsdelivr.net/npm/motion@latest/dist/motion.js"></script>
+      <script defer src="https://cdn.jsdelivr.net/npm/@imacrayon/alpine-ajax@0.12.2/dist/cdn.min.js"></script>
+      <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+		</head>
+		<body>
+			{ children... }
+			@FlashContainer()
+		</body>
+	</html>
+}
+
+templ FlashContainer() {
+	{{ flashes := template.Flashes(ctx) }}
+	if flashes != nil && len(flashes) > 0 {
+		<div id="flash-stack" class="fixed bottom-4 w-full flex flex-col gap-2 items-stretch max-w-[calc(100dvw-20px)] md:max-w-md md:end-4 md:left-auto md:translate-x-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0">
+			for i, flash := range flashes {
+				<div class="flash-message" data-flash-index={ i }>
+					switch flash.Type {
+						case session.FlashTypeSuccess:
+							@alert.Alert(alert.Props{Variant: alert.VariantSuccess}) {
+								@icon.BadgeCheck(icon.Props{Size: 16})
+								@alert.Title() {
+									{ flash.Title }
+								}
+								@alert.Description() {
+									{ flash.Description }
+								}
+							}
+						case session.FlashTypeDanger:
+							@alert.Alert(alert.Props{Variant: alert.VariantDanger}) {
+								@icon.TriangleAlert(icon.Props{Size: 16})
+								@alert.Title() {
+									{ flash.Title }
+								}
+								@alert.Description() {
+									{ flash.Description }
+								}
+							}
+						case session.FlashTypeInfo:
+							@alert.Alert(alert.Props{Variant: alert.VariantInfo}) {
+								@icon.Info(icon.Props{Size: 16})
+								@alert.Title() {
+									{ flash.Title }
+								}
+								@alert.Description() {
+									{ flash.Description }
+								}
+							}
+						case session.FlashTypeWarning:
+							@alert.Alert(alert.Props{Variant: alert.VariantWarning}) {
+								@icon.OctagonAlert(icon.Props{Size: 16})
+								@alert.Title() {
+									{ flash.Title }
+								}
+								@alert.Description() {
+									{ flash.Description }
+								}
+							}
+						case session.FlashTypePrimary:
+							@alert.Alert(alert.Props{Variant: alert.VariantPrimary}) {
+								@icon.Sparkle(icon.Props{Size: 16})
+								@alert.Title() {
+									{ flash.Title }
+								}
+								@alert.Description() {
+									{ flash.Description }
+								}
+							}
+						default:
+							@alert.Alert(alert.Props{Variant: alert.VariantDefault}) {
+								@icon.Info(icon.Props{Size: 16})
+								@alert.Title() {
+									{ flash.Title }
+								}
+								@alert.Description() {
+									{ flash.Description }
+								}
+							}
+					}
+				</div>
+			}
+		</div>
+		<script>
+			const flashes = document.querySelectorAll('.flash-message');
+			flashes.forEach((el, i) => {
+				Motion.animate(el, { x: [100, 0], opacity: [0, 1] }, { duration: 0.5, easing: "ease-in-out", delay: 0.3 + i * 0.1 });
+				setTimeout(() => {
+					Motion.animate(el, { x: [0, 100], opacity: [1, 0] }, { duration: 0.5, easing: "ease-in-out" });
+					setTimeout(() => {
+						el.remove();
+					}, 500);
+				}, 3000 + i * 200);
+			});
+		</script>
+	}
+}

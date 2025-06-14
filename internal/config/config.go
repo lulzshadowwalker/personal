@@ -37,3 +37,44 @@ func MustGet(key string) string {
 func Port() string {
 	return Get("PORT", "8080")
 }
+
+func Host() string {
+	return Get("HOST", "localhost")
+}
+
+func DBHost() string {
+	return Get("DB_HOST", "localhost")
+}
+
+func DBPort() string {
+	return Get("DB_PORT", "5432")
+}
+
+func DBUsername() string {
+	return Get("DB_USERNAME", "postgres")
+}
+
+func DBPassword() string {
+	return Get("DB_PASSWORD", "postgres")
+}
+
+func DBName() string {
+	return Get("DB_NAME", "personal")
+}
+
+func DBSSLMode() string {
+	return Get("DB_SSLMODE", "disable")
+}
+
+func DBConnectionString() string {
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		DBHost(), DBPort(), DBUsername(), DBPassword(), DBName(), DBSSLMode())
+}
+
+func Development() bool {
+	return os.Getenv("GO_ENV") == "production"
+}
+
+func Production() bool {
+	return os.Getenv("GO_ENV") == "production"
+}

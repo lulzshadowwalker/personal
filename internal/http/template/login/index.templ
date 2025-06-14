@@ -1,0 +1,128 @@
+package login
+
+import (
+	"github.com/lulzshadowwalker/personal/internal/http/template"
+	"github.com/lulzshadowwalker/personal/internal/http/template/component/button"
+	"github.com/lulzshadowwalker/personal/internal/http/template/component/card"
+	"github.com/lulzshadowwalker/personal/internal/http/template/component/form"
+	"github.com/lulzshadowwalker/personal/internal/http/template/component/input"
+	"github.com/lulzshadowwalker/personal/internal/http/template/component/spinner"
+	"github.com/lulzshadowwalker/personal/internal/http/template/layout"
+)
+
+type LoginFormParams struct {
+	Email    string
+}
+
+type LoginFormErrors struct {
+	Email    string
+	Password string
+}
+
+templ Login() {
+	@layout.Auth(layout.Props{Title: "Login"}) {
+		<main class="h-screen flex items-center justify-center">
+			@LoginForm(LoginFormParams{
+				Email: template.Old(ctx, "email"),
+			}, LoginFormErrors{
+				Email: template.Error(ctx, "email"),
+				Password: template.Error(ctx, "password"),
+			})
+		</main>
+	}
+}
+
+templ LoginForm(params LoginFormParams, errors LoginFormErrors) {
+	<form
+		hx-post="/login"
+		hx-swap="outerHTML"
+		class="w-full max-w-sm"
+		hx-indicator="#spinner"
+		hx-disabled-elt="find button"
+	>
+		@card.Card() {
+			@card.Header() {
+				@card.Title() {
+					Welcome back
+				}
+				@card.Description() {
+					Login to your account
+				}
+			}
+			@card.Content() {
+				<div class="flex flex-col gap-4">
+					<div class="w-full max-w-sm grid gap-2">
+						@form.Item() {
+							@form.Label(form.LabelProps{
+								For: "email",
+							}) {
+								Email
+							}
+							@input.Input(input.Props{
+								ID:          "email",
+								Name:        "email",
+								Type:        input.TypeEmail,
+                Required: false,
+								Placeholder: "email@example.com",
+								Value:       params.Email,
+								HasError:    errors.Email != "",
+							})
+							@form.Description() {
+								Enter your email address
+							}
+							if errors.Email != "" {
+								@form.Message(form.MessageProps{
+									Variant: form.MessageVariantDanger,
+								}) {
+									{ errors.Email }
+								}
+							}
+						}
+					</div>
+					<div class="w-full max-w-sm grid gap-2">
+						@form.Item() {
+							@form.Label(form.LabelProps{
+								For: "password",
+							}) {
+								Password
+							}
+							@input.Input(input.Props{
+								ID:          "password",
+								Type:        input.TypePassword,
+								Name:        "password",
+								Placeholder: "password",
+								Value:       params.Password,
+								HasError:    errors.Password != "",
+							})
+							@form.Description() {
+								Enter your password
+							}
+							if errors.Password != "" {
+								@form.Message(form.MessageProps{
+									Variant: form.MessageVariantDanger,
+								}) {
+									{ errors.Password }
+								}
+							}
+						}
+					</div>
+				</div>
+			}
+			@card.Footer(card.FooterProps{Class: "flex justify-between"}) {
+				@button.Button(button.Props{
+					Class: "ms-auto",
+					Type:  button.TypeSubmit,
+				}) {
+					Login
+					<span id="spinner" class="htmx-indicator hidden [&.htmx-request]:inline-flex">
+						@spinner.Spinner(spinner.Props{
+							Size:  spinner.SizeXs,
+							Color: "text-primary-foreground",
+							Class: "ms-1",
+						})
+					</span>
+				}
+			}
+		}
+	</form>
+}

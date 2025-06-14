@@ -1,91 +1,86 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"log/slog"
-	"net/http"
 	"os"
-	"time"
+	"os/signal"
+	"strings"
+	"syscall"
 
-	"github.com/a-h/templ"
-	"github.com/lulzshadowwalker/personal/cmd/http/public"
+	"github.com/gofiber/fiber/v2"
+	"github.com/lulzshadowwalker/personal/internal"
 	"github.com/lulzshadowwalker/personal/internal/config"
-	"github.com/lulzshadowwalker/personal/internal/template"
+	"github.com/lulzshadowwalker/personal/internal/http/handler"
+	"github.com/lulzshadowwalker/personal/internal/http/middleware"
+	"github.com/lulzshadowwalker/personal/internal/psql"
+	"github.com/lulzshadowwalker/personal/internal/psql/db"
+	"github.com/lulzshadowwalker/personal/internal/psql/store"
 )
 
-func initLogger() *slog.Logger {
-	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-			if a.Key == slog.TimeKey {
-				a.Value = slog.StringValue(a.Value.Time().Format(time.RFC3339))
-			}
-			return a
-		},
-	})
-	return slog.New(handler).With("service", "zaya-backend")
-}
-
-type loggingResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-}
-
-func (lrw *loggingResponseWriter) WriteHeader(code int) {
-	lrw.statusCode = code
-	lrw.ResponseWriter.WriteHeader(code)
-}
-
-func loggingMiddleware(logger *slog.Logger, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		lrw := &loggingResponseWriter{w, http.StatusOK}
-		next.ServeHTTP(lrw, r)
-		duration := time.Since(start)
-
-		logger.Info("http request",
-			"method", r.Method,
-			"path", r.URL.Path,
-			"status", lrw.statusCode,
-			"duration_ms", duration.Milliseconds(),
-			"client_ip", r.RemoteAddr,
-		)
-	})
-}
-
 func main() {
-	logger := initLogger()
-	port := config.Port()
-	logger.Info("loading configuration", "port", port)
+	app := fiber.New()
+	app.Use(middleware.Session)
 
-	component := template.Hello("zaya")
-	logger.Debug("template component ready")
+	app.Static("/public", "./cmd/http/public")
 
-	baseHandler := templ.Handler(component)
-	handler := loggingMiddleware(logger, baseHandler)
+	app.Get("/", handler.NewHome().Index)
+	app.Get("/login", handler.NewAuth(MockAuthService{}).Index)
+	app.Post("/login", handler.NewAuth(MockAuthService{}).Store)
 
-	isDevelopment := os.Getenv("GO_ENV") != "production"
-
-	mux := http.NewServeMux()
-
-	mux.Handle("GET /public/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if isDevelopment {
-			w.Header().Set("Cache-Control", "no-store")
+	go func() {
+		// app.Listen(":" + config.Port())
+		if err := app.Listen(":" + config.Port()); err != nil {
+			//  TODO: Log and check for server shutdown error
 		}
+	}()
 
-		fs := http.FileServer(http.Dir("./cmd/http/public"))
-		if !isDevelopment {
-			fs = http.FileServer(http.FS(public.Public))
-		}
+	slog.Info("server is running", "port", config.Port())
 
-		http.StripPrefix("/public/", fs).ServeHTTP(w, r)
-	}))
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
-	mux.Handle("GET /", handler)
-	mux.Handle("/", handler)
+	_ = <-c
+	slog.Info("received shutdown signal, shutting down server gracefully")
 
-	addr := fmt.Sprintf(":%s", port)
-	logger.Info("starting HTTP server", "addr", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
-		logger.Error("server terminated unexpectedly", "error", err)
+	if err := app.Shutdown(); err != nil {
+		slog.Error("failed to shutdown server gracefully", "err", err)
+		os.Exit(1)
 	}
+
+	//  NOTE: Cleanup tasks can be added here, such as closing database connections, etc.
+	slog.Info("server shutdown gracefully")
+}
+
+type MockAuthService struct {
+	//
+}
+
+func (m MockAuthService) Authenticate(ctx context.Context, email, password string) (internal.User, error) {
+	if email == "email@example.com" && password == "password" {
+		return internal.User{}, errors.New("invalid credentials")
+	}
+
+	pool, err := psql.Connect(psql.ConnectionParams{
+		Host:     config.DBHost(),
+		Port:     config.DBPort(),
+		Username: config.DBUsername(),
+		Password: config.DBPassword(),
+		Name:     config.DBName(),
+		SSLMode:  config.DBSSLMode(),
+	})
+	if err != nil {
+		slog.Error("failed to connect to database", "err", err)
+		os.Exit(1)
+	}
+
+	store := store.NewUserStore(db.New(pool))
+
+	u, _ := store.CreateUser(context.Background(), internal.User{
+		Name:  strings.Split(email, "@")[0],
+		Email: email,
+	})
+
+	return u, nil
 }
