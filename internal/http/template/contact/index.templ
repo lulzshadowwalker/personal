@@ -1,0 +1,77 @@
+package contact
+
+import "github.com/lulzshadowwalker/personal/internal/http/template/layout"
+
+templ Index(name string) {
+	@layout.App() {
+		<main class="breadcrumbs text-sm container mx-auto">
+			<ul>
+				<li><a href="/">Home</a></li>
+				<li><a>Contacts</a></li>
+			</ul>
+			<header class="flex items-start justify-between mt-5 mb-4">
+				<div>
+					<h1 class="text-2xl font-medium mb-1">Contacts</h1>
+					<p class="text-neutral-400 tracking-wide">Add, delete, and manage people in your life.</p>
+				</div>
+				<button class="btn btn-primary btn-sm"><i class="uil uil-plus-circle text-lg"></i> Create</button>
+			</header>
+			<div class="overflow-x-auto">
+				<table class="table">
+					<!-- head -->
+					<thead>
+						<tr>
+							<th>
+								<label>
+									<input type="checkbox" class="checkbox"/>
+								</label>
+							</th>
+							<th>Name</th>
+							<th>Relationship</th>
+							<th>Email</th>
+							<th>Birthdate</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, _ = range make([]int, 10) {
+							<tr class="hover:bg-base-200">
+								<th>
+									<label>
+										<input type="checkbox" class="checkbox"/>
+									</label>
+								</th>
+								<td>
+									<div class="flex items-center gap-3">
+										<div class="avatar">
+											<div class="mask mask-squircle h-12 w-12">
+												<img
+													src="https://img.daisyui.com/images/profile/demo/2@94.webp"
+													alt="Avatar Tailwind CSS Component"
+												/>
+											</div>
+										</div>
+										<div>
+											<div class="font-bold">Hart Hagerty</div>
+											<div class="text-sm opacity-50">United States</div>
+										</div>
+									</div>
+								</td>
+								<td>
+									<span class="badge badge-ghost badge-sm">Friend</span>
+								</td>
+								<td>
+									<span class="text-sm">hart.hagerty@email.com</span>
+								</td>
+								<td>
+									<span class="text-sm">1990-01-01</span>
+								</td>
+								<th><button class="btn btn-square btn-ghost"><i class="uil uil-bars"></i></button> </th>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</main>
+	}
+}

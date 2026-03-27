@@ -91,7 +91,6 @@ templ LoginForm(params LoginFormParams, errors LoginFormErrors) {
 								Type:        input.TypePassword,
 								Name:        "password",
 								Placeholder: "password",
-								Value:       params.Password,
 								HasError:    errors.Password != "",
 							})
 							@form.Description() {

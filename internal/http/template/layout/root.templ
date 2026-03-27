@@ -13,16 +13,24 @@ templ Root(props ...Props) {
 		{{ p = props[0] }}
 	}
 	<!DOCTYPE html>
-	<html lang="en">
+	<html lang="en" data-theme="wireframe">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>{ Fallback(p.Title, "Auth | Personal") } </title>
+			<title>{ Fallback(p.Title, "Personal") } </title>
 			<link rel="stylesheet" href="/public/css/style.css"/>
+			<link rel="icon" href="/public/favicon.ico"/>
 			<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 			<script src="https://cdn.jsdelivr.net/npm/motion@latest/dist/motion.js"></script>
-      <script defer src="https://cdn.jsdelivr.net/npm/@imacrayon/alpine-ajax@0.12.2/dist/cdn.min.js"></script>
-      <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+			<!-- Alpine / Alpine-Ajax -->
+			<script defer src="https://cdn.jsdelivr.net/npm/@imacrayon/alpine-ajax@0.12.2/dist/cdn.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+			<!-- DaisyUI / Tailwindcss -->
+			<link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css"/>
+			<link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/>
+			<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+			<!-- Icons ( Unicons ) -->
+			<link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css"/>
 		</head>
 		<body>
 			{ children... }
@@ -102,6 +110,7 @@ templ FlashContainer() {
 				</div>
 			}
 		</div>
+
 		<script>
 			const flashes = document.querySelectorAll('.flash-message');
 			flashes.forEach((el, i) => {

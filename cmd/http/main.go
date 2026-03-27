@@ -26,6 +26,7 @@ func main() {
 	app.Static("/public", "./cmd/http/public")
 
 	app.Get("/", handler.NewHome().Index)
+	app.Get("/contacts", handler.NewContact().Index)
 	app.Get("/login", handler.NewAuth(MockAuthService{}).Index)
 	app.Post("/login", handler.NewAuth(MockAuthService{}).Store)
 

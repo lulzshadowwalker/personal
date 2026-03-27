@@ -378,7 +378,6 @@ func LoginForm(params LoginFormParams, errors LoginFormErrors) templ.Component {
 						Type:        input.TypePassword,
 						Name:        "password",
 						Placeholder: "password",
-						Value:       params.Password,
 						HasError:    errors.Password != "",
 					}).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
@@ -430,7 +429,7 @@ func LoginForm(params LoginFormParams, errors LoginFormErrors) templ.Component {
 							var templ_7745c5c3_Var18 string
 							templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(errors.Password)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/template/login/index.templ`, Line: 104, Col: 26}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/template/login/index.templ`, Line: 103, Col: 26}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 							if templ_7745c5c3_Err != nil {
